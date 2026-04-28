@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Project } from '@/lib/db';
+import { Project } from '@/lib/supabase';
 
 export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([]);

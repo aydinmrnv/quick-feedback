@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDB, saveDB, Feedback } from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: Request) {
   const { projectId, rating, comment, url } = await request.json();
@@ -8,24 +8,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Project ID and rating are required' }, { status: 400 });
   }
 
-  const db = getDB();
-  const project = db.projects.find((p) => p.id === projectId);
+  const { data, error } = await supabase
+    .from('feedbacks')
+    .insert([{ projectId, rating, comment, url }])
+    .select()
+    .single();
 
-  if (!project) {
-    return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const newFeedback: Feedback = {
-    id: crypto.randomUUID(),
-    projectId,
-    rating,
-    comment,
-    url,
-    createdAt: new Date().toISOString(),
-  };
-
-  db.feedbacks.push(newFeedback);
-  saveDB(db);
-
-  return NextResponse.json(newFeedback);
+  return NextResponse.json(data);
 }

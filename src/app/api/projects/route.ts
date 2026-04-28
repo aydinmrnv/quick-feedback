@@ -1,9 +1,17 @@
 import { NextResponse } from 'next/server';
-import { getDB, saveDB, Project } from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 
 export async function GET() {
-  const db = getDB();
-  return NextResponse.json(db.projects);
+  const { data, error } = await supabase
+    .from('projects')
+    .select('*')
+    .order('createdAt', { ascending: false });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json(data);
 }
 
 export async function POST(request: Request) {
@@ -13,16 +21,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Name is required' }, { status: 400 });
   }
 
-  const db = getDB();
-  const newProject: Project = {
-    id: crypto.randomUUID(),
-    name,
-    url,
-    createdAt: new Date().toISOString(),
-  };
+  const { data, error } = await supabase
+    .from('projects')
+    .insert([{ name, url }])
+    .select()
+    .single();
 
-  db.projects.push(newProject);
-  saveDB(db);
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
-  return NextResponse.json(newProject);
+  return NextResponse.json(data);
 }

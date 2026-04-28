@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
-import { Project, Feedback } from '@/lib/db';
+import { Project, Feedback } from '@/lib/supabase';
 
 export default function ProjectDetails({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId } = use(params);
